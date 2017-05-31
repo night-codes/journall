@@ -171,6 +171,7 @@ func (q *Query) Select(selector interface{}) *Query {
 	for k, query := range q.queries {
 		q.queries[k] = query.Select(selector)
 	}
+	return q
 }
 
 // TODO - doesn't work
