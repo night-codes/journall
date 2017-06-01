@@ -46,8 +46,6 @@ func (jc *JournalCollection) Insert(insert ...Inserter) error {
 	idColl := jc.settings.DB.C(jc.settings.Name + "-IDS")
 	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
 
-	fmt.Println("tm", jc.settings.Name+"-"+types.String(tm))
-
 	for _, index := range jc.settings.Indexes {
 		index.Background = true
 		collection.EnsureIndex(index)
@@ -56,7 +54,6 @@ func (jc *JournalCollection) Insert(insert ...Inserter) error {
 	ids := []interface{}{}
 	for _, ins := range insert {
 		if ins.ID != nil {
-			fmt.Println(ins)
 			docs = append(docs, ins.Doc)
 			ids = append(ids, obj{"_id": ins.ID, "tm": tm})
 		}
@@ -86,7 +83,6 @@ func (jc *JournalCollection) FindId(id interface{}) *mgo.Query {
 	} else {
 		fmt.Println(err)
 	}
-	fmt.Println("tm", jc.settings.Name+"-"+types.String(tm))
 	return jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm)).FindId(id)
 }
 
