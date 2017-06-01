@@ -26,6 +26,8 @@ type (
 
 	Query struct {
 		queries []*mgo.Query
+		skip    int
+		limit   int
 	}
 
 	Inserter struct {
@@ -106,6 +108,9 @@ func (jc *JournalCollection) Find(query interface{}, TimeFrom time.Time, TimeTo 
 
 func (q *Query) All(result interface{}) {
 	varA := reflect.ValueOf(result)
+	skip := q.skip
+	limit := q.limit
+
 	if varA.Kind() != reflect.Ptr { // должен быть указатель
 		return
 	}
@@ -116,8 +121,18 @@ func (q *Query) All(result interface{}) {
 
 	varB := reflect.MakeSlice(varA.Type(), 0, 0)
 	for _, query := range q.queries {
-		query.All(result)
-		varB = reflect.AppendSlice(varB, varA)
+		count, _ := query.Count()
+		if count <= skip {
+			skip -= count
+		} else { //skip < count
+			query.Skip(skip).Limit(limit).All(result)
+			varB = reflect.AppendSlice(varB, varA)
+			limit -= varA.Len()
+			if limit == 0 {
+				break
+			}
+			skip = 0
+		}
 	}
 	varA.Set(varB)
 }
@@ -170,12 +185,12 @@ func (q *Query) Select(selector interface{}) *Query {
 	return q
 }
 
-// TODO - doesn't work
-func (q *Query) Skip(n int) *Query {
+func (q *Query) Skip(n uint64) *Query {
+	q.skip = int(n)
 	return q
 }
 
-// TODO - doesn't work
-func (q *Query) Limit(n int) *Query {
+func (q *Query) Limit(n uint64) *Query {
+	q.limit = int(n)
 	return q
 }
