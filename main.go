@@ -93,6 +93,11 @@ func (jc *JournalCollection) Update(insert Inserter, query interface{}, recordTi
 	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
 	return collection.Update(query, insert.Doc)
 }
+func (jc *JournalCollection) UpdateId(insert Inserter, recordTime time.Time) error {
+	tm := recordTime.UnixNano() / int64(jc.settings.Interval)
+	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
+	return collection.Update(obj{"_id": insert.ID}, insert.Doc)
+}
 
 func (jc *JournalCollection) Find(query interface{}, TimeFrom time.Time, TimeTo ...time.Time) *Query {
 	if len(TimeTo) == 0 {
