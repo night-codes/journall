@@ -88,6 +88,17 @@ func (jc *JournalCollection) FindId(id interface{}) *mgo.Query {
 	return jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm)).FindId(id)
 }
 
+func (jc *JournalCollection) Update(insert Inserter, query interface{}, recordTime time.Time) error {
+	tm := recordTime.UnixNano() / int64(jc.settings.Interval)
+	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
+	return collection.Update(query, insert.Doc)
+}
+func (jc *JournalCollection) UpdateId(insert Inserter, recordTime time.Time) error {
+	tm := recordTime.UnixNano() / int64(jc.settings.Interval)
+	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
+	return collection.Update(obj{"_id": insert.ID}, insert.Doc)
+}
+
 func (jc *JournalCollection) Find(query interface{}, TimeFrom time.Time, TimeTo ...time.Time) *Query {
 	if len(TimeTo) == 0 {
 		TimeTo = append(TimeTo, time.Now())
@@ -144,7 +155,7 @@ func (q *Query) One(result interface{}) (err error) {
 			return
 		}
 	}
-	return
+	return mgo.ErrNotFound
 }
 
 func (q *Query) Count() (n int, err error) {
