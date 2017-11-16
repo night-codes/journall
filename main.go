@@ -44,7 +44,11 @@ func Create(s Settings) *JournalCollection {
 }
 
 func (jc *JournalCollection) Insert(insert ...Inserter) error {
-	tm := int64(time.Now().UnixNano() / int64(jc.settings.Interval))
+	return jc.InsertTime(time.Now(), insert...)
+}
+
+func (jc *JournalCollection) InsertTime(t time.Time, insert ...Inserter) error {
+	tm := int64(t.UnixNano() / int64(jc.settings.Interval))
 	idColl := jc.settings.DB.C(jc.settings.Name + "-IDS")
 	collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
 
