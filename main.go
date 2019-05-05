@@ -116,7 +116,7 @@ func (jc *JournalCollection) Find(query interface{}, TimeFrom time.Time, TimeTo 
 	}
 	for tm := timeTo; tm >= timeFrom; tm-- {
 		collection := jc.settings.DB.C(jc.settings.Name + "-" + types.String(tm))
-		queries = append(queries, collection.Find(query).Sort("-$natural"))
+		queries = append(queries, collection.Find(query).Sort("-_id"))
 	}
 	return &Query{queries: queries}
 }
